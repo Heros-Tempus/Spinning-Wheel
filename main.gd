@@ -3,8 +3,11 @@ extends Node
 const FONTSIZE = 64
 const WHEELSPACING = 0.02
 
-@onready var file_path = "res://longfile.txt"
+@onready var file_path = "res://item-list.txt"
 @onready var input = load_file(file_path)
+
+@onready var settings_file_path = "res://settings.txt"
+@onready var settings = load_settings(settings_file_path)
 
 var rot =  false
 
@@ -12,8 +15,8 @@ var speed = 100
 var slowdown = false
 var slowdown_total = 0
 
-var text_alignment = "right"
-var default_text_alignment = "right"
+var text_alignment = "inside"
+var default_text_alignment = "inside"
 
 var wheel_png = "wheel.png"
 var wheel_color = Color(1,0,0,1)
@@ -31,14 +34,17 @@ var a = -1
 var window_position = Vector2i(0,0)
 var mouse_position = Vector2i(0,0)
 
+var window_size =  Vector2i(1152,1152)
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	get_tree().get_root().set_transparent_background(true)
 	randomize()
-	load_settings("res://settings.txt")
 	set_wheel_png()
 	color_wheel()
 	fill_wheel()
+	DisplayServer.window_set_size(window_size)
+	print(window_size)
 	if output_side == "left":
 		$BoxContainer/VBoxContainer/circle.rotation_degrees = 90
 
@@ -91,6 +97,8 @@ func load_settings(file):
 				output_color_change = to_bool(x[1])
 			"output_color":
 				output_color = to_color3(x[1])
+			"window_size":
+				window_size = to_Vector2i(x[1])
 	f.close()
 	pass
 
@@ -100,7 +108,8 @@ func _process(delta):
 	if rot:
 		for p in $BoxContainer/VBoxContainer/circle.get_children():
 			if p.get_child(0).text == "":
-				p.get_child(0).text = input.pick_random()
+				if input.pick_random():
+					p.get_child(0).text = input.pick_random()
 				if output_side == "right":
 					align_text(p.get_child(0),p,text_alignment)
 				if output_side == "left":
@@ -127,11 +136,11 @@ func _process(delta):
 				var c = output_color
 				index.get_child(0).label_settings.set_font_color(c)
 
-
 func add_label(text):
 	var p = PathFollow2D.new()
 	var l = Label.new()
-	l.text = text
+	if text:
+		l.text = text
 	l.label_settings = LabelSettings.new()
 	l.label_settings.font_size = FONTSIZE
 	if output_side == "right":
@@ -236,3 +245,7 @@ func to_color3(x):
 func to_color4(x):
 	var c = x.split(",")
 	return Color(float(c[0]), float(c[1]), float(c[2]), float(c[3]))
+
+func to_Vector2i(x):
+	var v = x.split(",")
+	return Vector2i(int(v[0]), int(v[1]))

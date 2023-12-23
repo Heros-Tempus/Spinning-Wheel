@@ -1,9 +1,11 @@
 Edit this file to change the properties of the wheel.
 The script will read through the file and attempt to split each line using the : character as the delimiter.
 If a line gets split and the first segment matches a keyword then the second segment is set as the property for that setting.
-If any of the settings are deleted then the relevent default setting will be used
+Altering or removing the keywords will cause that setting to revert to the default
+If a recognized keyword is found
+keywords are case sensitive, none of them are capilalized
 
-IMPORTANT: setting invalid values can cause the program to crash immediately.
+IMPORTANT:Settings that are lists of values require the every value to be set or the program will crash
 
 ----------
 sets the horizontal alignment of the text
@@ -17,23 +19,26 @@ sets the background wheel image
 change the name to the name of the image that you want to use as the wheel and place that image in the same directory as the exe
 the size of the default wheel image is 1000x1000
 
+
 wheel_png:wheel.png
 ----------
 
 ----------
-modulates the wheel's color by multiplying it
+modulates the wheel's color
 the four numbers represent the Red, Green, Blue, and Alpha channels
 Valid values range from 0 to 1 for each channel
-If you want no change then either remove this line or set them all to 1
+If you dont want to modulate the color then either remove this setting or set them all to 1
+The alpha channel sets the transparency, so you wont see the wheel image if you set it to 0
 If you want to use this setting then be sure to set all 4 values or the program will crash
 
-wheel_color:1,0,1,1
+wheel_color:1,1,1,1
 ----------
 
 ----------
 sets the color of the text
 the three numbers represent the Red, Green, and Blue channels
 Valid values range from 0 to 1 for each channel
+The alpha channel is governed by the script, so is not configurable here
 If you want to use this setting then be sure to set all 3 values or the program will crash
 
 text_color:0,1,1
@@ -55,8 +60,9 @@ output_side:right
 
 ----------
 sets whether you want the color of the output to change when the wheel stops
+valid options are true and false
 
-output_color_change:true
+output_color_change:false
 ----------
 
 ----------
@@ -64,4 +70,13 @@ sets the color that the output will change to if output_color_change is set to t
 If you want to use this setting then be sure to set all 3 values or the program will crash
 
 output_color:1,0,1
+----------
+
+----------
+sets the size that the window occupies
+most of the area will be transparent, only the wheel image and the text will be visible
+transparent areas are still interactable
+If you want to use this setting then be sure to set both values or the program will crash
+
+window_size:1152,1152
 ----------
