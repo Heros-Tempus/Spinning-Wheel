@@ -26,6 +26,17 @@ window/per_pixel_transparency/allowed=true
 
 enabled=PackedStringArray("res://addons/myplugin/plugin.cfg")
 
+[input]
+
+spin={
+"deadzone": 0.5,
+"events": []
+}
+quit={
+"deadzone": 0.5,
+"events": []
+}
+
 [rendering]
 
 renderer/rendering_method="gl_compatibility"

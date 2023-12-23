@@ -2,7 +2,6 @@ Edit this file to change the properties of the wheel.
 The script will read through the file and attempt to split each line using the : character as the delimiter.
 If a line gets split and the first segment matches a keyword then the second segment is set as the property for that setting.
 Altering or removing the keywords will cause that setting to revert to the default
-If a recognized keyword is found
 keywords are case sensitive, none of them are capilalized
 
 IMPORTANT:Settings that are lists of values require the every value to be set or the program will crash
@@ -18,7 +17,6 @@ text_alignment:inside
 sets the background wheel image
 change the name to the name of the image that you want to use as the wheel and place that image in the same directory as the exe
 the size of the default wheel image is 1000x1000
-
 
 wheel_png:wheel.png
 ----------
@@ -79,4 +77,23 @@ transparent areas are still interactable
 If you want to use this setting then be sure to set both values or the program will crash
 
 window_size:1152,1152
+----------
+
+----------
+Sets the hotkey(s) to trigger the spin
+add modifiers by appending the key with -[modifier]
+valid hotkeys are, left right and middle mouse buttons, all letters, all numbers (just the numeric values), all keypad numbers (prepend the numeric value with kp), f1-f24, backtick, space, comma, period, slash
+all valid modifiers are shift, alt, ctrl
+mouse button inputs only trigger on double click
+if no spin trigger is set then it will default to double left click
+
+spin_triggers:f1,f2-shift,kp5-ctrl-alt
+----------
+
+----------
+Sets the hotkey(s) to close the program
+set up in the same way as spin_trigger
+if no exit trigger is set then it will default to double right click
+
+program_exit:double_right_click,f4
 ----------
