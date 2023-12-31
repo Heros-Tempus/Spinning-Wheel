@@ -50,6 +50,14 @@ var keyboard = { "a":KEY_A, "b":KEY_B, "c":KEY_C, "d":KEY_D, "e":KEY_E, "f":KEY_
 "kp1":KEY_KP_1, "kp2":KEY_KP_2, "kp3":KEY_KP_3, "kp4":KEY_KP_4, "kp5":KEY_KP_5,
 "kp6":KEY_KP_6, "kp7":KEY_KP_7, "kp8":KEY_KP_8, "kp9":KEY_KP_9, "kp0":KEY_KP_0, }
 
+var position = 0
+
+var spin_down_arr = [0, 1000, 975]
+var spin_down_rate = 0.99
+
+var font_size = 64
+var circle_radius = 0.495
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	get_tree().get_root().set_transparent_background(true)
@@ -68,11 +76,10 @@ func _ready():
 	DisplayServer.window_set_size(window_size)
 	if output_side == "left":
 		$BoxContainer/VBoxContainer/circle.rotation_degrees = 90
+	position = $BoxContainer/VBoxContainer/circle.get_child(0).get_progress_ratio()
 
 func fill_wheel():
-	#duplicate 100 randomly selected nodes from text
-	#position items
-	for a in 200:
+	for a in 2000:
 		if a*WHEELSPACING < 1:
 			var b = add_label((input.pick_random()))
 			b.set_progress_ratio(a*WHEELSPACING)
@@ -131,6 +138,8 @@ func _process(delta):
 	randomize()
 	if rot:
 		for p in $BoxContainer/VBoxContainer/circle.get_children():
+			if (p.get_progress_ratio() + (delta * speed)) > 1:
+				p.get_child(0).text = ""
 			if p.get_child(0).text == "":
 				if input.pick_random():
 					p.get_child(0).text = input.pick_random()
@@ -142,12 +151,16 @@ func _process(delta):
 			var col = Color(text_color, normal(p.get_progress_ratio()))
 			var settings = LabelSettings.new()
 			p.get_child(0).label_settings = set_label_settings(settings, col)
-			if p.get_progress_ratio()+delta > 1:
-				p.get_child(0).text = ""
-		if randi_range(0,1000) > 950:
+		var displacement = $BoxContainer/VBoxContainer/circle.get_child(0).get_progress_ratio() - position
+		if displacement >= 0.04 or displacement < 0:
+			position = $BoxContainer/VBoxContainer/circle.get_child(0).get_progress_ratio()
+			$AudioStreamPlayer.play()
+		else:
+			pass
+		if randi_range(spin_down_arr[0],spin_down_arr[1]) > spin_down_arr[2]:
 			slowdown = true
 		if slowdown:
-			speed = speed*0.9
+			speed = speed * spin_down_rate
 		if is_equal_approx(speed,0):
 			speed = 0
 			rot = false
@@ -166,7 +179,6 @@ func add_label(text):
 	if text:
 		l.text = text
 	l.label_settings = LabelSettings.new()
-	l.label_settings.font_size = FONTSIZE
 	if output_side == "right":
 		l.rotation_degrees = -90
 	if output_side == "left":
@@ -224,10 +236,12 @@ func reset():
 	slowdown = false
 	slowdown_total = 0
 	a = -1
+	input = load_file(file_path)
+	$AudioStreamPlayer.set_pitch_scale(1)
 
 func set_label_settings(setting, col):
 	setting.font_color = col
-	setting.font_size = 64
+	setting.font_size = font_size
 	setting.outline_size = 10
 	setting.outline_color = Color(0,0,0,normal(a*WHEELSPACING))
 	return setting
