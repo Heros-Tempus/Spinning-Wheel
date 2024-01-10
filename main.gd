@@ -59,7 +59,7 @@ var font_size = 64
 var circle_radius = 0.495
 
 # Called when the node enters the scene tree for the first time.
-func _ready():
+func _ready():	
 	get_tree().get_root().set_transparent_background(true)
 	randomize()
 	if InputMap.action_get_events("quit").size()==0:

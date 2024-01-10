@@ -82,10 +82,9 @@ window_size:1152,1152
 ----------
 Sets the hotkey(s) to trigger the spin
 add modifiers by appending the key with -[modifier]
-valid hotkeys are, left right and middle mouse buttons, all letters, all numbers (just the numeric values), all keypad numbers (prepend the numeric value with kp), f1-f24, backtick, space, comma, period, slash
+valid hotkeys are, all letters, all numbers (just the numeric values), all keypad numbers (prepend the numeric value with kp), f1-f24
 all valid modifiers are shift, alt, ctrl
-mouse button inputs only trigger on double click
-if no spin trigger is set then it will default to double left click
+
 
 spin_triggers:f1,f2-shift,kp5-ctrl-alt
 ----------
