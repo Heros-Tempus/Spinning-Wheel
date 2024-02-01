@@ -82,17 +82,24 @@ window_size:1152,1152
 ----------
 Sets the hotkey(s) to trigger the spin
 add modifiers by appending the key with -[modifier]
-valid hotkeys are, all letters, all numbers (just the numeric values), all keypad numbers (prepend the numeric value with kp), f1-f24
-all valid modifiers are shift, alt, ctrl
+valid hotkeys are, all letters, all numbers (just the numeric values), all keypad numbers (prepend the numeric value with num), f1-f24, scroll_lock, num_lock, backspace, tab, enter, caps_lock, escape, space, page_up, page_down, home, end, left_arrow, up_arrow, right_arrow, down_arrow, print_screen, insert, delete
+all valid modifiers are shift, alt, ctrl, and win
+the spin can also be triggered with a double left click
 
-
-spin_triggers:f1,f2-shift,kp5-ctrl-alt
+spin_triggers:f1,f2-shift,num_5-ctrl-alt
 ----------
 
 ----------
 Sets the hotkey(s) to close the program
 set up in the same way as spin_trigger
-if no exit trigger is set then it will default to double right click
+the exit can also be triggered with a double right click
 
-program_exit:double_right_click,f4
+program_exit:f4-shift,f8-win
+----------
+
+----------
+Sets whether the wheel click is muted or not
+unlike the other settings you dont need to specify any properties, either include the mute keyword or dont
+
+mute
 ----------

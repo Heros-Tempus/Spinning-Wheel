@@ -29,7 +29,7 @@ var output_side = "right"
 var output_color_change = true
 var output_color = Color(1,0,1)
 
-var a = -1
+var d = -1
 
 var window_position = Vector2i(0,0)
 var mouse_position = Vector2i(0,0)
@@ -84,8 +84,8 @@ func fill_wheel():
 			var b = add_label((input.pick_random()))
 			b.set_progress_ratio(a*WHEELSPACING)
 			var col = Color(text_color,normal(a*WHEELSPACING))
-			var settings = LabelSettings.new()
-			b.get_child(0).label_settings = set_label_settings(settings, col)
+			var label_settings = LabelSettings.new()
+			b.get_child(0).label_settings = set_label_settings(label_settings, col)
 			if output_side == "right":
 				align_text(b.get_child((0)),b,text_alignment)
 			if output_side == "left":
@@ -127,9 +127,13 @@ func load_settings(file):
 			"window_size":
 				window_size = to_Vector2i(x[1])
 			"spin_triggers":
-				set_spin_input(x[1])
+				#set_spin_input(x[1])
+				pass
 			"program_exit":
-				set_quit_input(x[1])
+				#set_quit_input(x[1])
+				pass
+			"mute":
+				$AudioStreamPlayer.set_volume_db(-800)
 	f.close()
 	pass
 
@@ -149,8 +153,8 @@ func _process(delta):
 					align_text_flipped(p.get_child(0),p,text_alignment)
 			p.set_progress_ratio(p.get_progress_ratio()+(delta*speed))
 			var col = Color(text_color, normal(p.get_progress_ratio()))
-			var settings = LabelSettings.new()
-			p.get_child(0).label_settings = set_label_settings(settings, col)
+			var label_settings = LabelSettings.new()
+			p.get_child(0).label_settings = set_label_settings(label_settings, col)
 		var displacement = $BoxContainer/VBoxContainer/circle.get_child(0).get_progress_ratio() - position
 		if displacement >= 0.04 or displacement < 0:
 			position = $BoxContainer/VBoxContainer/circle.get_child(0).get_progress_ratio()
@@ -166,8 +170,8 @@ func _process(delta):
 			rot = false
 			var index
 			for x in $BoxContainer/VBoxContainer/circle.get_children():
-				if abs(x.get_rotation_degrees())>a:
-					a = abs(x.get_rotation_degrees())
+				if abs(x.get_rotation_degrees())>d:
+					d = abs(x.get_rotation_degrees())
 					index = x
 			if output_color_change:
 				var c = output_color
@@ -235,15 +239,14 @@ func reset():
 	speed = 100
 	slowdown = false
 	slowdown_total = 0
-	a = -1
+	d = -1
 	input = load_file(file_path)
-	$AudioStreamPlayer.set_pitch_scale(1)
 
 func set_label_settings(setting, col):
 	setting.font_color = col
 	setting.font_size = font_size
 	setting.outline_size = 10
-	setting.outline_color = Color(0,0,0,normal(a*WHEELSPACING))
+	setting.outline_color = Color(0,0,0,normal(d*WHEELSPACING))
 	return setting
 	
 func align_text(label, pathfollow, alignment):
@@ -361,3 +364,15 @@ func set_quit_input(x):
 			if inp.has("ctrl"):
 				quit_input.ctrl_pressed = true
 			InputMap.action_add_event("quit",quit_input)
+
+
+func _on_box_container_hot_key_quit():
+	print("trying to quit")
+	get_tree().quit()
+
+func _on_box_container_hot_key_spin():
+	reset()
+	rot = true
+
+func set_click_sound_settings():
+	pass
