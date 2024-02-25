@@ -14,6 +14,7 @@ var rot =  false
 var speed = 100
 var slowdown = false
 var slowdown_total = 0
+var slowdown_max = 100
 
 var text_alignment = "inside"
 var default_text_alignment = "inside"
@@ -52,11 +53,12 @@ var keyboard = { "a":KEY_A, "b":KEY_B, "c":KEY_C, "d":KEY_D, "e":KEY_E, "f":KEY_
 
 var position = 0
 
-var spin_down_arr = [0, 1000, 975]
-var spin_down_rate = 0.99
+var slow_down_rate = 0.99
 
 var font_size = 64
 var circle_radius = 0.495
+
+var delete_items = false
 
 # Called when the node enters the scene tree for the first time.
 func _ready():	
@@ -102,6 +104,24 @@ func load_file(file):
 		out.pop_back()
 	return out
 	
+func remove_item(file, item):
+	var f = FileAccess.open(file, FileAccess.READ)
+	var s = FileAccess.get_file_as_string(file)
+	var o = ""
+	var b = false
+	s = s.split("\n")
+	if s.find("") != -1:
+		s.remove_at(s.find(""))
+	for i in s:
+		if i != item or b == true:
+			o = o + i + "\n"
+		else:
+			b = true
+	f.close()
+	f = FileAccess.open(file, FileAccess.WRITE)
+	f.store_string(o)
+	f.close()
+
 func load_settings(file):
 	var f = FileAccess.open(file,FileAccess.READ)
 	while not f.eof_reached(): # iterate through all lines until the end of file is reached
@@ -134,8 +154,17 @@ func load_settings(file):
 				pass
 			"mute":
 				$AudioStreamPlayer.set_volume_db(-800)
+			"slowdown_rate":
+				slow_down_rate = float(x[1])
+				if slow_down_rate >= 1:
+					slow_down_rate = 0.99
+				elif slow_down_rate < 0:
+					slow_down_rate = 0
+			"slowdown_time":
+				slowdown_max = int(x[1])
+			"delete":
+				delete_items = to_bool(x[1])
 	f.close()
-	pass
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
@@ -144,6 +173,7 @@ func _process(delta):
 		for p in $BoxContainer/VBoxContainer/circle.get_children():
 			if (p.get_progress_ratio() + (delta * speed)) > 1:
 				p.get_child(0).text = ""
+			
 			if p.get_child(0).text == "":
 				if input.pick_random():
 					p.get_child(0).text = input.pick_random()
@@ -155,16 +185,22 @@ func _process(delta):
 			var col = Color(text_color, normal(p.get_progress_ratio()))
 			var label_settings = LabelSettings.new()
 			p.get_child(0).label_settings = set_label_settings(label_settings, col)
+		
 		var displacement = $BoxContainer/VBoxContainer/circle.get_child(0).get_progress_ratio() - position
 		if displacement >= 0.04 or displacement < 0:
 			position = $BoxContainer/VBoxContainer/circle.get_child(0).get_progress_ratio()
 			$AudioStreamPlayer.play()
 		else:
 			pass
-		if randi_range(spin_down_arr[0],spin_down_arr[1]) > spin_down_arr[2]:
+		
+		if slowdown_total >= slowdown_max:
 			slowdown = true
+		else:
+			slowdown_total = slowdown_total + 1
+		
 		if slowdown:
-			speed = speed * spin_down_rate
+			speed = speed * slow_down_rate
+		
 		if is_equal_approx(speed,0):
 			speed = 0
 			rot = false
@@ -176,6 +212,8 @@ func _process(delta):
 			if output_color_change:
 				var c = output_color
 				index.get_child(0).label_settings.set_font_color(c)
+				if delete_items:
+					remove_item("item-list.txt", index.get_child(0).text)
 
 func add_label(text):
 	var p = PathFollow2D.new()

@@ -103,3 +103,26 @@ unlike the other settings you dont need to specify any properties, either includ
 
 mute
 ----------
+
+----------
+Sets the number of frames required to make the wheel start slowing down
+defaults to 100 if not set
+
+slowdown_time:100
+----------
+
+----------
+Sets the percent change of the wheel's speed on every frame after it has started slowing down
+0.99 will make it lose 1% speed on every frame after the slowdown has started and will be a nice gentle stop
+0.9 will make it loose 10% speed on every frame and will stop quite abruptly
+defaults to 0.99 if not set
+
+slowdown_rate:0.99
+----------
+
+----------
+Sets whether items get deleted from the item list when after the wheel lands on it
+defaults to false if not set
+
+delete:false
+----------
