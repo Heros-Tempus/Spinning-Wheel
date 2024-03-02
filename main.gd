@@ -104,23 +104,34 @@ func load_file(file):
 		out.pop_back()
 	return out
 	
-func remove_item(file, item):
-	var f = FileAccess.open(file, FileAccess.READ)
-	var s = FileAccess.get_file_as_string(file)
+func remove_item(item):
+	var f = FileAccess.open(ProjectSettings.globalize_path("item-list.txt"), FileAccess.READ_WRITE)
+	var s = FileAccess.get_file_as_string(ProjectSettings.globalize_path("item-list.txt"))
 	var o = ""
 	var b = false
 	s = s.split("\n")
 	if s.find("") != -1:
 		s.remove_at(s.find(""))
 	for i in s:
-		if i != item or b == true:
-			o = o + i + "\n"
+		var x = i
+		if str(i).ends_with("\r"):
+			x = str(i).replace("\r", "")
+		if len(s) > 1:
+			if x != item or b == true:
+				o = o + i + "\n"
+			else:
+				b = true
 		else:
-			b = true
+			o = o + i + "\n"
 	f.close()
-	f = FileAccess.open(file, FileAccess.WRITE)
-	f.store_string(o)
-	f.close()
+	var folder := OS.get_executable_path().get_base_dir()
+	var dir = DirAccess.open(folder)
+	#var err1 = dir.rename("item-list.txt", "trash.txt")
+	dir.remove("item-list.txt")
+	#var err2 = OS.move_to_trash(ProjectSettings.globalize_path("trash.txt"))
+	var save = FileAccess.open(ProjectSettings.globalize_path("item-list.txt"), FileAccess.WRITE)
+	save.store_string(o)
+	save.close()
 
 func load_settings(file):
 	var f = FileAccess.open(file,FileAccess.READ)
@@ -213,7 +224,7 @@ func _process(delta):
 				var c = output_color
 				index.get_child(0).label_settings.set_font_color(c)
 				if delete_items:
-					remove_item("item-list.txt", index.get_child(0).text)
+					remove_item(index.get_child(0).text)
 
 func add_label(text):
 	var p = PathFollow2D.new()
