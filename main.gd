@@ -3,8 +3,8 @@ extends Node
 const FONTSIZE = 64
 const WHEELSPACING = 0.02
 
-@onready var file_path = "res://item-list.txt"
-@onready var input = load_file(file_path)
+@onready var item_list_path = "res://item-list.txt"
+@onready var input = load_file(item_list_path)
 
 @onready var settings_file_path = "res://settings.txt"
 @onready var settings = load_settings(settings_file_path)
@@ -30,15 +30,12 @@ var output_side = "right"
 var output_color_change = true
 var output_color = Color(1,0,1)
 
-var d = -1
+var rightmost_position = -1
 
 var window_position = Vector2i(0,0)
 var mouse_position = Vector2i(0,0)
 
 var window_size =  Vector2i(1152,1152)
-
-var spin_triggers = []
-var program_exit = ""
 
 var keyboard = { "a":KEY_A, "b":KEY_B, "c":KEY_C, "d":KEY_D, "e":KEY_E, "f":KEY_F, "g":KEY_G, "h":KEY_H,
 "i":KEY_I, "j":KEY_J, "k":KEY_K, "l":KEY_L, "m":KEY_M, "n":KEY_N, "o":KEY_O, "p":KEY_P, "q":KEY_Q,
@@ -93,10 +90,10 @@ func fill_wheel():
 			if output_side == "left":
 				align_text_flipped(b.get_child((0)),b,text_alignment)
 
-func load_file(file):
+func load_file(file): # gets all lines in a plain text file and returns as an array of strings
 	var out = []
 	var f = FileAccess.open(file,FileAccess.READ)
-	while not f.eof_reached(): # iterate through all lines until the end of file is reached
+	while not f.eof_reached():
 		var line = f.get_line()
 		out.append(line)
 	f.close()
@@ -104,18 +101,11 @@ func load_file(file):
 		out.pop_back()
 	return out
 	
-func remove_item(item):
-	var f = FileAccess.open(file_path, FileAccess.READ)
-	var lines = []
-	while not f.eof_reached():
-		var line = f.get_line()
-		if line != "":
-			lines.append(line)
-	f.close()
-
+func remove_item(file, item): # removes a single line that from the text file that matches the given string if and only if the file has more than one line
+	var lines = load_file(file)
 	if len(lines) > 1:
 		lines.remove_at(lines.find(item))
-		var save = FileAccess.open(file_path, FileAccess.WRITE)
+		var save = FileAccess.open(file, FileAccess.WRITE)
 		save.store_string("\n".join(lines))
 		save.close()
 
@@ -203,14 +193,14 @@ func _process(delta):
 			rot = false
 			var index
 			for x in $BoxContainer/VBoxContainer/circle.get_children():
-				if abs(x.get_rotation_degrees())>d:
-					d = abs(x.get_rotation_degrees())
+				if abs(x.get_rotation_degrees())>rightmost_position:
+					rightmost_position = abs(x.get_rotation_degrees())
 					index = x
 			if output_color_change:
 				var c = output_color
 				index.get_child(0).label_settings.set_font_color(c)
 				if delete_items:
-					remove_item(index.get_child(0).text)
+					remove_item(item_list_path, index.get_child(0).text)
 
 func add_label(text):
 	var p = PathFollow2D.new()
@@ -252,11 +242,7 @@ func _input(event):
 
 func _on_box_container_gui_input(event):
 	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_LEFT and event.double_click:
-			#rot = not rot
-			#reset()
-			pass
-		elif event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 			#set starting position
 			window_position = DisplayServer.window_get_position()
 			mouse_position = event.global_position
@@ -265,23 +251,19 @@ func _on_box_container_gui_input(event):
 			#set end position
 			var delta =  mouse_position - event.global_position
 			DisplayServer.window_set_position(Vector2i(window_position) - Vector2i(delta))
-			pass
-		elif event.button_index == MOUSE_BUTTON_MASK_RIGHT and event.double_click:
-			#get_tree().quit()
-			pass
 
 func reset():
 	speed = 100
 	slowdown = false
 	slowdown_total = 0
-	d = -1
-	input = load_file(file_path)
+	rightmost_position = -1
+	input = load_file(item_list_path)
 
 func set_label_settings(setting, col):
 	setting.font_color = col
 	setting.font_size = font_size
 	setting.outline_size = 10
-	setting.outline_color = Color(0,0,0,normal(d*WHEELSPACING))
+	setting.outline_color = Color(0,0,0,normal(WHEELSPACING))
 	return setting
 	
 func align_text(label, pathfollow, alignment):
@@ -402,12 +384,8 @@ func set_quit_input(x):
 
 
 func _on_box_container_hot_key_quit():
-	print("trying to quit")
 	get_tree().quit()
 
 func _on_box_container_hot_key_spin():
 	reset()
 	rot = true
-
-func set_click_sound_settings():
-	pass
