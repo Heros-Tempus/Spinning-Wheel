@@ -105,33 +105,19 @@ func load_file(file):
 	return out
 	
 func remove_item(item):
-	var f = FileAccess.open(ProjectSettings.globalize_path("item-list.txt"), FileAccess.READ_WRITE)
-	var s = FileAccess.get_file_as_string(ProjectSettings.globalize_path("item-list.txt"))
-	var o = ""
-	var b = false
-	s = s.split("\n")
-	if s.find("") != -1:
-		s.remove_at(s.find(""))
-	for i in s:
-		var x = i
-		if str(i).ends_with("\r"):
-			x = str(i).replace("\r", "")
-		if len(s) > 1:
-			if x != item or b == true:
-				o = o + i + "\n"
-			else:
-				b = true
-		else:
-			o = o + i + "\n"
+	var f = FileAccess.open(file_path, FileAccess.READ)
+	var lines = []
+	while not f.eof_reached():
+		var line = f.get_line()
+		if line != "":
+			lines.append(line)
 	f.close()
-	var folder := OS.get_executable_path().get_base_dir()
-	var dir = DirAccess.open(folder)
-	#var err1 = dir.rename("item-list.txt", "trash.txt")
-	dir.remove("item-list.txt")
-	#var err2 = OS.move_to_trash(ProjectSettings.globalize_path("trash.txt"))
-	var save = FileAccess.open(ProjectSettings.globalize_path("item-list.txt"), FileAccess.WRITE)
-	save.store_string(o)
-	save.close()
+
+	if len(lines) > 1:
+		lines.remove_at(lines.find(item))
+		var save = FileAccess.open(file_path, FileAccess.WRITE)
+		save.store_string("\n".join(lines))
+		save.close()
 
 func load_settings(file):
 	var f = FileAccess.open(file,FileAccess.READ)
