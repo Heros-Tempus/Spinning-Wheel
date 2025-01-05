@@ -44,7 +44,7 @@ var slow_down_rate = 0.99
 var font_size = 64
 var circle_radius = 0.495
 
-var delete_items = false
+var delete_items = "none"
 
 # Called when the node enters the scene tree for the first time.
 func _ready():	
@@ -101,6 +101,18 @@ func remove_item(file, item):
 		save.store_string("\n".join(lines))
 		save.close()
 
+# removes all matching items from the text file
+func remove_all_items(file, item):
+	var lines = load_file(file)
+	while(lines.find(item) != -1):
+		if len(lines) > 1:
+			lines.remove_at(lines.find(item))
+			var save = FileAccess.open(file, FileAccess.WRITE)
+			save.store_string("\n".join(lines))
+			save.close()
+		else:
+			break
+
 # reads the given file, checks for lines that match configurable settings and sets the settings accordingly
 func load_settings(file):
 	var lines = load_file(file)
@@ -136,7 +148,7 @@ func load_settings(file):
 			"slowdown_time":
 				slowdown_max = int(split_line[1])
 			"delete":
-				delete_items = to_bool(split_line[1])
+				delete_items = String(split_line[1]).to_lower()
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
@@ -184,8 +196,10 @@ func _process(delta):
 			if output_color_change:
 				var c = output_color
 				index.get_child(0).label_settings.set_font_color(c)
-				if delete_items:
+				if delete_items == "one":
 					remove_item(item_list_path, index.get_child(0).text)
+				elif  delete_items == "all":
+					remove_all_items(item_list_path, index.get_child(0).text)
 
 # creates PathFollow2D nodes with attached labels and adds them as children to the circle node. the circle node inherits from Path2D
 func add_label(text):

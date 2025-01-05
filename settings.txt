@@ -4,7 +4,7 @@ If a line gets split and the first segment matches a keyword then the second seg
 Altering or removing the keywords will cause that setting to revert to the default
 keywords are case sensitive, none of them are capilalized
 
-IMPORTANT:Settings that are lists of numbers require the every number to be set or the program will crash
+IMPORTANT:Settings that are vectors require the every value to be set or the program will crash
 
 ----------
 sets the horizontal alignment of the text
@@ -117,12 +117,15 @@ Sets the percent change of the wheel's speed on every frame after it has started
 0.9 will make it loose 10% speed on every frame and will stop quite abruptly
 defaults to 0.99 if not set
 
-slowdown_rate:0.1
+slowdown_rate:0.99
 ----------
 
 ----------
 Sets whether items get deleted from the item list when after the wheel lands on it
-defaults to false if not set
+Can be set to "one" or "all"
+setting it to one will delete only the list item the wheel landed on
+setting it to all will delete all items on the list that match what the wheel landed on
+setting it to anything else will stop the wheel from deleting anything
 
-delete:true
+delete:all
 ----------
