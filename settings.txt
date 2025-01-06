@@ -128,4 +128,5 @@ setting it to all will delete all items on the list that match what the wheel la
 setting it to anything else will stop the wheel from deleting anything
 
 delete:all
+case_sensitive:false
 ----------

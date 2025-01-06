@@ -45,6 +45,7 @@ var font_size = 64
 var circle_radius = 0.495
 
 var delete_items = "none"
+var case_sensitive = false
 
 # Called when the node enters the scene tree for the first time.
 func _ready():	
@@ -92,7 +93,7 @@ func load_file(file):
 		out.pop_back()
 	return out
 	
-# removes a single line that from the text file that matches the given string if and only if the file has more than one line
+# removes a single line that from the item list, does not remove the last item
 func remove_item(file, item): 
 	var lines = load_file(file)
 	if len(lines) > 1:
@@ -101,12 +102,36 @@ func remove_item(file, item):
 		save.store_string("\n".join(lines))
 		save.close()
 
-# removes all matching items from the text file
+# removes a single line from the item list, does not remove the last item, ignoring case
+func remove_item_CASE_INSENSITIVE(file, item): 
+	var lines = load_file(file)
+	var lines_upper = lines.map(func(x): return x.to_upper())
+	if len(lines) > 1:
+		lines.remove_at(lines_upper.find(item.to_upper()))
+		var save = FileAccess.open(file, FileAccess.WRITE)
+		save.store_string("\n".join(lines))
+		save.close()
+
+# removes all matching items from the text file, does not remove the last item
 func remove_all_items(file, item):
 	var lines = load_file(file)
-	while(lines.find(item) != -1):
+	while(item in lines):
 		if len(lines) > 1:
 			lines.remove_at(lines.find(item))
+			var save = FileAccess.open(file, FileAccess.WRITE)
+			save.store_string("\n".join(lines))
+			save.close()
+		else:
+			break
+
+# removes all matching items from the text file, does not remove the last item, ignoring case
+func remove_all_items_CASE_INSENSITIVE(file, item):
+	var lines = load_file(file)
+	var lines_upper = lines.map(func(x): return x.to_upper())
+	while(item.to_upper() in lines_upper):
+		if len(lines) > 1:
+			lines.remove_at(lines_upper.find(item.to_upper()))
+			lines_upper.remove_at(lines_upper.find(item.to_upper()))
 			var save = FileAccess.open(file, FileAccess.WRITE)
 			save.store_string("\n".join(lines))
 			save.close()
@@ -149,6 +174,8 @@ func load_settings(file):
 				slowdown_max = int(split_line[1])
 			"delete":
 				delete_items = String(split_line[1]).to_lower()
+			"case_sensitive":
+				case_sensitive = to_bool(split_line[1])
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
@@ -196,10 +223,14 @@ func _process(delta):
 			if output_color_change:
 				var c = output_color
 				index.get_child(0).label_settings.set_font_color(c)
-				if delete_items == "one":
+				if delete_items == "one" and case_sensitive:
 					remove_item(item_list_path, index.get_child(0).text)
-				elif  delete_items == "all":
+				elif  delete_items == "all" and case_sensitive:
 					remove_all_items(item_list_path, index.get_child(0).text)
+				elif delete_items == "one":
+					remove_item_CASE_INSENSITIVE(item_list_path, index.get_child(0).text)
+				elif delete_items == "all":
+					remove_all_items_CASE_INSENSITIVE(item_list_path, index.get_child(0).text)
 
 # creates PathFollow2D nodes with attached labels and adds them as children to the circle node. the circle node inherits from Path2D
 func add_label(text):
