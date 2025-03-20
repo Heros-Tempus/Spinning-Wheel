@@ -47,6 +47,10 @@ var circle_radius = 0.495
 var delete_items = "none"
 var case_sensitive = false
 
+var use_popup = false
+var use_tts = false
+var voice_id
+
 # Called when the node enters the scene tree for the first time.
 func _ready():	
 	get_tree().get_root().set_transparent_background(true)
@@ -63,8 +67,14 @@ func _ready():
 	color_wheel()
 	fill_wheel()
 	DisplayServer.window_set_size(window_size)
+	var s = DisplayServer.screen_get_size()
 	if output_side == "left":
+		var p = $ColorRect.get_position()
+		$ColorRect.position = Vector2i(window_size[0]*(1.0/4.0)-$ColorRect.size[0]/2.0, p[1])
 		$BoxContainer/VBoxContainer/circle.rotation_degrees = 90
+	else:
+		var p = $ColorRect.get_position()
+		$ColorRect.position = Vector2i(window_size[0] * (3.0/4.0)-$ColorRect.size[0]/2.0, p[1])
 	position = $BoxContainer/VBoxContainer/circle.get_child(0).get_progress_ratio()
 
 # creates enough objects to fill the wheel
@@ -176,6 +186,38 @@ func load_settings(file):
 				delete_items = String(split_line[1]).to_lower()
 			"case_sensitive":
 				case_sensitive = to_bool(split_line[1])
+			"popup":
+				use_popup = to_bool(split_line[1])
+			"popup_color":
+				$ColorRect.color = to_color4(split_line[1])
+			"tts":
+				use_tts = to_bool(split_line[1])
+				if use_tts:
+					set_tts_voice()
+
+
+func set_tts_voice():
+	var languages = [OS.get_locale(), OS.get_locale_language(), ""]
+	for lang in languages:
+		var voices = DisplayServer.tts_get_voices_for_language(lang)
+		var natural_voices = filter_array(voices, "Natural")
+		if not natural_voices.is_empty():
+			voice_id = natural_voices[0]
+			break
+	if voice_id == null:
+		var voices = DisplayServer.tts_get_voices()
+		if not voices.is_empty():
+			voice_id = voices[0]
+		else:
+			use_tts = false
+
+func filter_array(a: Array[String], s: String):
+	s = s.to_lower()
+	var result: Array = []
+	for e in a:
+		if e.to_lower().find(s) != -1:
+			result.append(e)
+	return result
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
@@ -231,6 +273,10 @@ func _process(delta):
 					remove_item_CASE_INSENSITIVE(item_list_path, index.get_child(0).text)
 				elif delete_items == "all":
 					remove_all_items_CASE_INSENSITIVE(item_list_path, index.get_child(0).text)
+			if use_popup:
+				$ColorRect/Label.text = index.get_child(0).text
+				$ColorRect.visible = true
+			tts(index.get_child(0).text)
 
 # creates PathFollow2D nodes with attached labels and adds them as children to the circle node. the circle node inherits from Path2D
 func add_label(text):
@@ -260,14 +306,20 @@ func _input(event):
 	if event is InputEventMouseButton:
 		if event.double_click:
 			if event.is_action_pressed("spin"):
-				rot = not rot
-				reset()
+				if $ColorRect.is_visible():
+					$ColorRect.visible = false
+				else:
+					reset()
+					rot = not rot
 			if event.is_action_pressed("quit"):
 				get_tree().quit()
 	else:
 		if event.is_action_pressed("spin"):
-			rot = not rot
-			reset()
+			if $ColorRect.is_visible():
+				$ColorRect.visible = false
+			else:
+				reset()
+				rot = not rot
 		if event.is_action_pressed("quit"):
 			get_tree().quit()
 
@@ -336,7 +388,7 @@ func color_wheel():
 
 func set_wheel_png():
 	$BoxContainer/VBoxContainer/Wheel.texture = load("res://" + wheel_png)
-	
+
 func to_bool(x):
 	if x == "true":
 		return true
@@ -355,9 +407,16 @@ func to_Vector2i(x):
 	var v = x.split(",")
 	return Vector2i(int(v[0]), int(v[1]))
 
+func tts(s: String):
+	if use_tts:
+		DisplayServer.tts_speak(s, voice_id, 50, 1.0, 1.0, 0, false)
+
 func _on_box_container_hot_key_quit():
 	get_tree().quit()
 
 func _on_box_container_hot_key_spin():
-	reset()
-	rot = true
+	if $ColorRect.is_visible():
+		$ColorRect.visible = false
+	else:
+		reset()
+		rot = not rot
